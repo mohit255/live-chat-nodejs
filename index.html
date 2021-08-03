@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Live Chat</title>
+		<title>ICW Tech Team</title>
 		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -281,6 +281,88 @@ h1 {
 ::-webkit-scrollbar-thumb:hover {
   background-color: #a8bbbf;
 }
+.typing-indicator {
+  background-color: #e6e7ed;
+  will-change: transform;
+  width: auto;
+  border-radius: 50px;
+  /*padding: 20px;*/
+  display: table;
+  margin: 0 auto;
+  position: relative;
+  -webkit-animation: 2s bulge infinite ease-out;
+          animation: 2s bulge infinite ease-out;
+}
+.typing-indicator::before, .typing-indicator::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: -2px;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background-color: #e6e7ed;
+}
+.typing-indicator::after {
+  height: 10px;
+  width: 10px;
+  left: -10px;
+  bottom: -10px;
+}
+.typing-indicator span {
+  height: 15px;
+  width: 15px;
+  float: left;
+  margin: 0 1px;
+  background-color: #9e9ea1;
+  display: block;
+  border-radius: 50%;
+  opacity: 0.4;
+}
+.typing-indicator span:nth-of-type(1) {
+  -webkit-animation: 1s blink infinite 0.3333s;
+          animation: 1s blink infinite 0.3333s;
+}
+.typing-indicator span:nth-of-type(2) {
+  -webkit-animation: 1s blink infinite 0.6666s;
+          animation: 1s blink infinite 0.6666s;
+}
+.typing-indicator span:nth-of-type(3) {
+  -webkit-animation: 1s blink infinite 0.9999s;
+          animation: 1s blink infinite 0.9999s;
+}
+
+@-webkit-keyframes blink {
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: 1;
+  }
+}
+@-webkit-keyframes bulge {
+  50% {
+    transform: scale(1.05);
+  }
+}
+@keyframes bulge {
+  50% {
+    transform: scale(1.05);
+  }
+}
+/*html {
+  display: table;
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  display: table-cell;
+  vertical-align: middle;
+}*/
 		</style>
 	</head>
 	<!--Coded With Love By Mutiullah Samim-->
@@ -297,7 +379,7 @@ h1 {
 									<span class="online_icon"></span>
 								</div> -->
 								<div class="user_info">
-									<span>Live Chat</span>
+									<span>Tech Team</span>
 									<!-- <p>1767 Messages</p> -->
 								</div>
 								<!-- <div class="video_cam">
@@ -335,22 +417,24 @@ h1 {
 		</div>
 	</body>
 	<script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
-	<script src="http://192.168.55.104:3000/socket.io/socket.io.js"></script>
+	<script src="http://192.168.1.72:4000/socket.io/socket.io.js"></script>
 	<script>
-	
+	const TYPING_TIMER_LENGTH = 400;
+
 	function scrollDownChat(){
 			var element = document.getElementById("chatMessageSection");
 			element.scrollTop = element.scrollHeight;
 	}
 
 	function play() {
-	  var audio = new Audio('http://192.168.55.104/chat/chat.mp3');
+	  var audio = new Audio('http://192.168.1.72/chat.mp3');
 	  audio.play();
 	}
 	function playforFun() {
 	  var audio = new Audio('https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3');
 	  audio.play();
 	}
+
 		$(document).ready(function(){
 			$('#action_menu_btn').click(function(){
 				$('.action_menu').toggle();
@@ -358,7 +442,7 @@ h1 {
 		});
 		
 		//const socket = io();
-		const socket=io.connect("http://192.168.55.104:3000",{"transports": ['websocket']});
+		const socket=io.connect("http://192.168.1.72:4000",{"transports": ['websocket']});
 		let from = Math.random();
 		let message;
 		
@@ -377,6 +461,10 @@ h1 {
 				}
 		
 	  });
+
+	  $('#message').on('input', function(){
+			socket.emit('useryping', []);
+		});
 	 
 	  socket.on('new message', function (data) {
 	  	console.log(data);
@@ -391,5 +479,23 @@ h1 {
 			$('.msg_card_body').append('<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="https://cdn.icon-icons.com/icons2/1378/PNG/512/avatardefault_92824.png" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">'+data.message+'</div></div>');
 			scrollDownChat();
 	   });
+
+	  socket.on('useryping', function(data){
+	  	console.log(data.user + '-  is typing')
+	  	lastTypingTime = (new Date()).getTime();
+	  	// console.log(lastTypingTime);
+		  typing = true;
+	  	$('.typing').remove();
+    	$('.msg_card_body').append('<div class="d-flex justify-content-start mb-4 typing"><div class="img_cont_msg"><img src="https://cdn.icon-icons.com/icons2/1378/PNG/512/avatardefault_92824.png" class="rounded-circle user_img_msg"></div><div class="msg_cotainer"><div class="typing-indicator"><span></span><span></span><span></span></div></div></div>');
+    	setTimeout(() => {
+        const typingTimer = (new Date()).getTime();
+        const timeDiff = typingTimer - lastTypingTime;
+        // console.log(timeDiff +' | '+TYPING_TIMER_LENGTH+' | '+typing);
+        if (timeDiff >= TYPING_TIMER_LENGTH && typing) {
+        		$('.typing').remove();
+          typing = false;
+        }
+      }, TYPING_TIMER_LENGTH);
+	  });
 	</script>
 </html>
